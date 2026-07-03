@@ -85,7 +85,7 @@ function pushLocationHistory(loc) {
 let db = null;
 function idbOpen() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('pasha', 1);
+    const req = indexedDB.open('pasha_v2', 1);
     req.onupgradeneeded = () => { req.result.createObjectStore('images', { keyPath: 'id' }); };
     req.onsuccess = () => { db = req.result; resolve(); };
     req.onerror = () => reject(req.error);
@@ -1482,6 +1482,13 @@ function bindEvents() {
     showToast('この端末ではデータ保存を利用できません');
   }
   loadState();
+  // 自己修復: メタデータはあるのに画像本体が無い(DB変更・データ破損)なら、メタごとリセット
+  if (photos.length) {
+    try {
+      const rec = await idbGet(photos[0].id);
+      if (!rec) { photos = []; persistPhotos(); }
+    } catch (e) { /* 判定不能時はそのまま */ }
+  }
   bindEvents();
   showScreen('home');
   renderAll();
