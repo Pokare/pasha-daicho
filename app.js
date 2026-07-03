@@ -1000,27 +1000,34 @@ function pdfFileName() {
 /* ================================================================
  * サンプル現場写真（デモ保険。実ファイルが無ければCanvasで擬似生成）
  * ================================================================ */
+// 場所・工種は各写真に「実際に写っているもの」を記述する（黒板と写真の一致がデモの命）
 const SAMPLE_PLAN = [
-  { file: '01_dokou_zenkei.jpg',   kousyu: '土工',     location: '敷地全景',        takenAt: '2026-06-29T08:40:00' },
-  { file: '02_dokou_negiri.jpg',   kousyu: '土工',     location: '根切り',          takenAt: '2026-06-29T09:15:00' },
-  { file: '03_dokou_saiseki.jpg',  kousyu: '土工',     location: '砕石敷き',        takenAt: '2026-06-29T11:02:00' },
-  { file: '04_dokou_tenatsu.jpg',  kousyu: '土工',     location: '転圧完了',        takenAt: '2026-06-29T14:30:00' },
-  { file: '05_anzen_chourei.jpg',  kousyu: '安全管理', location: '朝礼・KY活動',    takenAt: '2026-06-29T08:10:00' },
-  { file: '06_anzen_ashiba.jpg',   kousyu: '安全管理', location: '足場点検',        takenAt: '2026-06-29T13:20:00' },
-  { file: '07_anzen_kakoi.jpg',    kousyu: '安全管理', location: '仮囲い養生',      takenAt: '2026-06-29T16:05:00' },
-  { file: '08_kata_gaishuu.jpg',   kousyu: '型枠',     location: '基礎外周部',      takenAt: '2026-06-30T09:05:00' },
-  { file: '09_kata_tatekomi.jpg',  kousyu: '型枠',     location: '型枠建込み',      takenAt: '2026-06-30T10:40:00' },
-  { file: '10_kata_shime.jpg',     kousyu: '型枠',     location: '締固め確認',      takenAt: '2026-06-30T13:20:00' },
-  { file: '11_tekkin_zenkei.jpg',  kousyu: '鉄筋',     location: '配筋全景',        takenAt: '2026-07-01T09:00:00' },
-  { file: '12_tekkin_base.jpg',    kousyu: '鉄筋',     location: 'ベース配筋',      takenAt: '2026-07-01T09:40:00' },
-  { file: '13_tekkin_spacer.jpg',  kousyu: '鉄筋',     location: 'スペーサー設置',  takenAt: '2026-07-01T10:30:00' },
-  { file: '14_tekkin_kaburi.jpg',  kousyu: '鉄筋',     location: 'かぶり厚検査',    takenAt: '2026-07-01T11:45:00' },
-  { file: '15_shiage_shitaji.jpg', kousyu: '仕上げ',   location: '左官下地処理',    takenAt: '2026-07-02T09:30:00' },
-  { file: '16_shiage_sakan.jpg',   kousyu: '仕上げ',   location: '左官仕上げ',      takenAt: '2026-07-02T10:15:00' },
-  { file: '17_shiage_youjou.jpg',  kousyu: '仕上げ',   location: '養生確認',        takenAt: '2026-07-02T13:00:00' },
-  { file: '18_setsubi_kyusui.jpg', kousyu: '設備',     location: '給水配管',        takenAt: '2026-07-02T11:00:00' },
-  { file: '19_setsubi_sleeve.jpg', kousyu: '設備',     location: 'スリーブ設置',    takenAt: '2026-07-02T14:10:00' },
-  { file: '20_setsubi_koubai.jpg', kousyu: '設備',     location: '配管勾配確認',    takenAt: '2026-07-02T15:00:00' },
+  // 土工 6/29 — 着工から地面づくりまで
+  { file: '01_dokou_zenkei.jpg',   kousyu: '土工',     location: '着工前 敷地全景',    takenAt: '2026-06-29T08:40:00' },
+  { file: '02_dokou_negiri.jpg',   kousyu: '土工',     location: '根切り掘削',        takenAt: '2026-06-29T09:15:00' },
+  { file: '03_dokou_saiseki.jpg',  kousyu: '土工',     location: '砕石搬入',          takenAt: '2026-06-29T11:02:00' },
+  { file: '04_dokou_tenatsu.jpg',  kousyu: '土工',     location: '転圧作業',          takenAt: '2026-06-29T14:30:00' },
+  // 安全管理 6/29
+  { file: '05_anzen_chourei.jpg',  kousyu: '安全管理', location: '重機搬入 立会い',   takenAt: '2026-06-29T08:10:00' },
+  { file: '06_anzen_ashiba.jpg',   kousyu: '安全管理', location: '足場組立て 点検',   takenAt: '2026-06-29T13:20:00' },
+  { file: '07_anzen_kakoi.jpg',    kousyu: '安全管理', location: '立入防止柵の設置',  takenAt: '2026-06-29T16:05:00' },
+  // 型枠 6/30 — 材料搬入→建込み→完了
+  { file: '09_kata_tatekomi.jpg',  kousyu: '型枠',     location: '型枠材 搬入',       takenAt: '2026-06-30T09:05:00' },
+  { file: '10_kata_shime.jpg',     kousyu: '型枠',     location: '型枠建込み',        takenAt: '2026-06-30T10:40:00' },
+  { file: '08_kata_gaishuu.jpg',   kousyu: '型枠',     location: '建込み完了 全景',   takenAt: '2026-06-30T13:20:00' },
+  // 鉄筋 7/1 — 材料搬入→組立て→配筋完了（12は擬似写真: きれいな配筋グリッド）
+  { file: '11_tekkin_zenkei.jpg',  kousyu: '鉄筋',     location: '鉄筋材 搬入',       takenAt: '2026-07-01T09:00:00' },
+  { file: '13_tekkin_spacer.jpg',  kousyu: '鉄筋',     location: '鉄筋組立て',        takenAt: '2026-07-01T09:40:00' },
+  { file: '14_tekkin_kaburi.jpg',  kousyu: '鉄筋',     location: '壁配筋 完了',       takenAt: '2026-07-01T10:30:00' },
+  { file: '12_tekkin_base.jpg',    kousyu: '鉄筋',     location: 'ベース配筋',        takenAt: '2026-07-01T11:45:00' },
+  // 仕上げ 7/2（15/16は擬似写真: 左官壁）
+  { file: '15_shiage_shitaji.jpg', kousyu: '仕上げ',   location: '左官下地処理',      takenAt: '2026-07-02T09:30:00' },
+  { file: '16_shiage_sakan.jpg',   kousyu: '仕上げ',   location: '左官仕上げ',        takenAt: '2026-07-02T10:15:00' },
+  { file: '20_setsubi_koubai.jpg', kousyu: '仕上げ',   location: '外構 石張り',       takenAt: '2026-07-02T14:00:00' },
+  // 設備 7/2 — 搬入→掘削→敷設（17は擬似写真: 配管）
+  { file: '19_setsubi_sleeve.jpg', kousyu: '設備',     location: '配管材 搬入',       takenAt: '2026-07-02T10:40:00' },
+  { file: '18_setsubi_kyusui.jpg', kousyu: '設備',     location: '配管用 掘削',       takenAt: '2026-07-02T11:00:00' },
+  { file: '17_shiage_youjou.jpg',  kousyu: '設備',     location: '給水管 敷設',       takenAt: '2026-07-02T13:30:00' },
 ];
 
 /* Canvas製の擬似現場写真（最終保険） */
