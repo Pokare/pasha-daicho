@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16324A">
+<title>パシャ台帳 — 撮るだけで工事写真台帳</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='10' width='56' height='44' rx='5' fill='%2317563F'/%3E%3Crect x='8' y='14' width='48' height='36' rx='2' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M14 26h36M14 34h36M14 42h22' stroke='%23fff' stroke-width='2.5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div class="logo">
+      <svg class="logo-icon" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="10" width="56" height="44" rx="5" fill="#17563F"/><rect x="8" y="14" width="48" height="36" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M14 26h36M14 34h36M14 42h22" stroke="#fff" stroke-width="2.5"/></svg>
+      <span class="logo-text">パシャ台帳</span>
+    </div>
+    <div class="header-right">
+      <button id="price-btn" class="price-chip" type="button">¥ 比較</button>
+      <span class="ver">v1.0</span>
+    </div>
+  </header>
+
+  <!-- 工事名バー -->
+  <button id="project-bar" class="project-bar" type="button">
+    <span id="project-bar-name">工事名を設定</span>
+    <span class="project-bar-edit">変更</span>
+  </button>
+
+  <!-- 画面A: ホーム -->
+  <section id="screen-home" class="screen">
+
+    <div class="card next-board">
+      <div class="card-title">次の写真の黒板</div>
+      <div class="field">
+        <label class="field-label">工種</label>
+        <div id="kousyu-chips" class="chips"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="location-input">測点・場所</label>
+        <input id="location-input" class="text-input" type="text" list="location-list" placeholder="例）1階 東側基礎" autocomplete="off">
+        <datalist id="location-list"></datalist>
+      </div>
+    </div>
+
+    <div class="camera-area">
+      <label class="camera-btn" for="camera-input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7.6 6.4H4a2 2 0 0 0-2 2V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.4a2 2 0 0 0-2-2h-3.6L14.5 4z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>撮影する</span>
+      </label>
+      <input id="camera-input" type="file" accept="image/*" capture="environment" hidden>
+      <div class="camera-sub">
+        <label class="link-btn" for="album-input">アルバムから選ぶ</label>
+        <input id="album-input" type="file" accept="image/*" multiple hidden>
+      </div>
+      <button id="load-samples" class="outline-btn" type="button">▸ サンプル現場写真20枚を読み込む</button>
+    </div>
+
+    <div class="card recent-card" id="recent-card" hidden>
+      <div class="card-title">最近の写真</div>
+      <div id="recent-thumbs" class="recent-thumbs"></div>
+    </div>
+
+    <button id="goto-gallery" class="big-cta" type="button" disabled>台帳を見る（0枚）</button>
+
+    <p class="footnote">データはこの端末内にのみ保存されます・オフライン対応<br>※本ツールは元請への日常報告用です</p>
+  </section>
+
+  <!-- 画面B: 台帳ギャラリー -->
+  <section id="screen-gallery" class="screen" hidden>
+    <div class="subheader">
+      <button class="back-btn" data-back="home" type="button">← 戻る</button>
+      <span id="gallery-title" class="subheader-title"></span>
+    </div>
+    <div id="gallery-groups" class="gallery-groups"></div>
+    <div class="bottom-cta-space"></div>
+    <div class="bottom-cta">
+      <button id="make-pdf-btn" class="big-cta accent" type="button">台帳PDFを作成</button>
+    </div>
+  </section>
+
+  <!-- 画面C: PDF完成 -->
+  <section id="screen-pdf" class="screen" hidden>
+    <div class="subheader">
+      <button class="back-btn" data-back="gallery" type="button">← 戻る</button>
+      <span class="subheader-title">工事写真台帳</span>
+    </div>
+
+    <div id="pdf-progress" class="pdf-progress" hidden>
+      <div class="spinner-text" id="pdf-progress-text">台帳を組版中…</div>
+    </div>
+
+    <div id="pdf-result" hidden>
+      <div class="card pdf-done">
+        <div class="pdf-done-head">✅ 工事写真台帳が完成しました</div>
+        <div class="pdf-done-stats" id="pdf-stats"></div>
+        <div class="pdf-actions">
+          <button id="pdf-open" class="big-cta accent" type="button">PDFを開く</button>
+          <div class="pdf-actions-row">
+            <button id="pdf-download" class="outline-btn" type="button">保存する</button>
+            <button id="pdf-print" class="outline-btn" type="button">印刷する</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card price-card">
+        <div class="card-title">同じ仕事に、いま払われている金額</div>
+        <table class="price-table">
+          <tbody>
+            <tr><td>ミライ工事</td><td>月額 3,300円/人</td></tr>
+            <tr><td>蔵衛門御用達</td><td>買い切り 約20万円</td></tr>
+            <tr><td>ANDPAD</td><td>月額 数万円〜</td></tr>
+            <tr class="price-hero"><td>パシャ台帳</td><td>無料 ¥0</td></tr>
+          </tbody>
+        </table>
+        <p class="price-note">※本ツールは元請・施主への日常報告用です（公共工事の電子納品は対象外）</p>
+      </div>
+
+      <div class="pdf-pages-title">プレビュー</div>
+      <div id="pdf-pages" class="pdf-pages"></div>
+    </div>
+  </section>
+
+</div><!-- /#app -->
+
+<!-- モーダルM1: 撮影直後プレビュー -->
+<div id="modal-preview" class="modal" hidden>
+  <div class="modal-panel preview-panel">
+    <div class="modal-bar">
+      <button id="pv-cancel" class="bar-btn" type="button">閉じる</button>
+      <span class="modal-bar-title">黒板の確認</span>
+      <button id="pv-save" class="bar-btn save" type="button">保存 ✓</button>
+    </div>
+    <div class="pv-canvas-wrap">
+      <canvas id="pv-canvas"></canvas>
+      <div class="pv-hint" id="pv-hint">黒板はドラッグで移動できます</div>
+    </div>
+    <div class="pv-controls">
+      <div class="field slider-field">
+        <label class="field-label" for="pv-scale">黒板サイズ</label>
+        <input id="pv-scale" type="range" min="25" max="60" value="40">
+        <label class="bb-toggle"><input id="pv-visible" type="checkbox" checked>黒板を表示</label>
+      </div>
+      <div class="field">
+        <label class="field-label">工種</label>
+        <div id="pv-chips" class="chips"></div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="pv-location">測点・場所</label>
+        <input id="pv-location" class="text-input" type="text" list="location-list" placeholder="例）1階 東側基礎" autocomplete="off">
+      </div>
+      <button id="pv-delete" class="danger-btn" type="button" hidden>この写真を削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダルM2: 価格比較 -->
+<div id="modal-price" class="modal" hidden>
+  <div class="modal-panel price-panel">
+    <div class="modal-bar">
+      <button id="price-close" class="bar-btn" type="button">閉じる</button>
+      <span class="modal-bar-title">従来との比較</span>
+      <span class="bar-btn" aria-hidden="true"></span>
+    </div>
+    <div class="price-panel-body">
+      <div class="before-block">
+        <div class="before-label">これまで：Excelに手作業で貼り付け</div>
+        <div class="excel-mock">
+          <div class="excel-toolbar"><span></span><span></span><span></span>工事写真台帳_田中様邸(3).xlsx</div>
+          <div class="excel-grid">
+            <div class="excel-photo p1"></div>
+            <div class="excel-photo p2"></div>
+            <div class="excel-photo p3"></div>
+            <div class="excel-cell-text">工種：？？（あとで確認）</div>
+          </div>
+        </div>
+        <div class="before-caption">1現場 <strong>2〜3時間</strong>／夜の持ち帰り作業・貼り間違い頻発</div>
+      </div>
+      <div class="vs-divider">▼</div>
+      <div class="after-block">
+        <div class="after-label">パシャ台帳：撮るだけ → 3タップでPDF <strong>実測1秒未満</strong></div>
+        <table class="price-table">
+          <tbody>
+            <tr><td>ミライ工事</td><td>月額 3,300円/人</td></tr>
+            <tr><td>蔵衛門御用達</td><td>買い切り 約20万円</td></tr>
+            <tr><td>ANDPAD</td><td>月額 数万円〜</td></tr>
+            <tr class="price-hero"><td>パシャ台帳</td><td>無料 ¥0</td></tr>
+          </tbody>
+        </table>
+        <p class="price-note">写真台帳は「現に金が払われている」機能です。<br>それを登録不要・圏外OK・¥0にしました。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 初回設定オーバーレイ -->
+<div id="setup-overlay" class="modal" hidden>
+  <div class="modal-panel setup-panel">
+    <div class="setup-head">
+      <svg class="setup-icon" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="10" width="56" height="44" rx="5" fill="#17563F"/><rect x="8" y="14" width="48" height="36" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M14 26h36M14 34h36M14 42h22" stroke="#fff" stroke-width="2.5"/></svg>
+      <div class="setup-title">工事情報を設定</div>
+      <div class="setup-sub">黒板と台帳に自動で入ります（入力はこの1回だけ）</div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="setup-project">工事名</label>
+      <input id="setup-project" class="text-input" type="text" placeholder="例）（仮称）佐藤様邸 新築工事">
+    </div>
+    <div class="field">
+      <label class="field-label" for="setup-contractor">施工者</label>
+      <input id="setup-contractor" class="text-input" type="text" placeholder="例）鈴木組">
+    </div>
+    <button id="setup-start" class="big-cta accent" type="button">はじめる</button>
+  </div>
+</div>
+
+<!-- トースト -->
+<div id="toast" class="toast" hidden></div>
+
+<!-- 印刷用コンテナ（画面には出ない） -->
+<div id="print-pages" class="print-pages" aria-hidden="true"></div>
+
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
